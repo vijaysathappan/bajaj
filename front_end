@@ -1,0 +1,84 @@
+import React, { useState } from "react";
+import axios from "axios";
+
+function App() {
+  const [jsonInput, setJsonInput] = useState("");
+  const [response, setResponse] = useState(null);
+  const [error, setError] = useState("");
+  const [selectedOptions, setSelectedOptions] = useState([]);
+  
+  const handleSubmit = async () => {
+    setError(""); // Clear any previous errors
+    try {
+      // Validate JSON
+      const parsedInput = JSON.parse(jsonInput);
+      
+      // Send request to the backend
+      const res = await axios.post("https://bfhl-kjgc.onrender.com/bfhl", parsedInput);
+      
+      setResponse(res.data); // Set the response from backend
+      
+    } catch (e) {
+      setError("Invalid JSON input or API Error");
+    }
+  };
+
+  const handleSelectChange = (e) => {
+    const value = Array.from(e.target.selectedOptions, option => option.value);
+    setSelectedOptions(value);
+  };
+
+  const renderResponse = () => {
+    if (!response) return null;
+    
+    let filteredResponse = {};
+    if (selectedOptions.includes("Alphabets")) {
+      filteredResponse.alphabets = response.alphabets;
+    }
+    if (selectedOptions.includes("Numbers")) {
+      filteredResponse.numbers = response.numbers;
+    }
+    if (selectedOptions.includes("Highest lowercase alphabet")) {
+      filteredResponse.highest_lowercase_alphabet = response.highest_lowercase_alphabet;
+    }
+
+    return (
+      <div>
+        <h3>Filtered Response</h3>
+        <pre>{JSON.stringify(filteredResponse, null, 2)}</pre>
+      </div>
+    );
+  };
+
+  return (
+    <div className="App" style={{ textAlign: 'center', fontFamily: 'Arial, sans-serif', margin: '20px' }}>
+      <h1>BFHL Challenge</h1>
+      <input 
+        type="text" 
+        placeholder='Enter JSON' 
+        value={jsonInput}
+        onChange={(e) => setJsonInput(e.target.value)}
+        style={{ padding: '10px', width: '300px', marginRight: '10px' }}
+      />
+      <button onClick={handleSubmit} style={{ padding: '10px 20px', cursor: 'pointer' }}>Submit</button>
+      {error && <p style={{ color: 'red', marginTop: '10px' }}>{error}</p>}
+      
+      {response && (
+        <div>
+          <h3>Select Data to Display</h3>
+          <select multiple onChange={handleSelectChange} style={{ marginTop: '10px', padding: '10px', width: '200px' }}>
+            <option value="Alphabets">Alphabets</option>
+            <option value="Numbers">Numbers</option>
+            <option value="Highest lowercase alphabet">Highest lowercase alphabet</option>
+          </select>
+        </div>
+      )}
+      
+      {renderResponse()}
+    </div>
+  );
+}
+
+export default App;
+
+
